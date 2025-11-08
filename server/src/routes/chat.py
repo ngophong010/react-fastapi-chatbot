@@ -7,7 +7,7 @@ import time
 from ..redis.producer import Producer
 from ..redis.config import Redis
 from ..schema.chat import Chat
-from rejson import Path
+
 from ..redis.stream import StreamConsumer
 from ..redis.cache import Cache
 
@@ -29,8 +29,8 @@ async def token_generator(name: str, request: Request):
         raise HTTPException(status_code=400, detail={
             "loc": "name",  "msg": "Enter a valid name"})
 
-    # Create nee chat session
-    json_client = redis.create_rejson_connection()
+    # Create new chat session
+    json_client = await redis.create_rejson_connection()
     chat_session = Chat(
         token=token,
         messages=[],
@@ -39,8 +39,9 @@ async def token_generator(name: str, request: Request):
 
     print(chat_session.dict())
 
-    # Store chat session in redis JSON with the token as key
-    json_client.jsonset(str(token), Path.rootPath(), chat_session.dict())
+    # Store chat session in redis with the token as key
+    import json as json_lib
+    await json_client.set(str(token), json_lib.dumps(chat_session.dict()))
 
     # Set a timeout for redis data
     redis_client = await redis.create_connection()
@@ -56,7 +57,7 @@ async def token_generator(name: str, request: Request):
 
 @chat.get("/refresh_token")
 async def refresh_token(request: Request, token: str):
-    json_client = redis.create_rejson_connection()
+    json_client = await redis.create_rejson_connection()
     cache = Cache(json_client)
     data = await cache.get_chat_history(token)
 
@@ -76,7 +77,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_toke
     await manager.connect(websocket)
     redis_client = await redis.create_connection()
     producer = Producer(redis_client)
-    json_client = redis.create_rejson_connection()
+    json_client = await redis.create_rejson_connection()
     consumer = StreamConsumer(redis_client)
 
     try:

@@ -1,4 +1,4 @@
-from rejson import Path
+import json
 
 
 class Cache:
@@ -6,9 +6,7 @@ class Cache:
         self.json_client = json_client
 
     async def get_chat_history(self, token: str):
-        data = self.json_client.jsonget(
-            str(token), Path.rootPath())
-
+        data = await self.json_client.json().get(str(token))
         return data
 
     async def add_message_to_cache(self, token: str, source: str, message_data: dict):
@@ -17,5 +15,4 @@ class Cache:
         elif source == "bot":
             message_data['msg'] = "Bot: " + (message_data['msg'])
 
-        self.json_client.jsonarrappend(
-            str(token), Path('.messages'), message_data)
+        await self.json_client.json().arrappend(str(token), '.messages', message_data)

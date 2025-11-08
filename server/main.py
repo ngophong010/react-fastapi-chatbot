@@ -24,7 +24,7 @@ api.add_middleware(
 
 @api.get("/test")
 async def root():
-    return {'msg": "API is Online'}
+    return {"msg": "API is Online"}
 
 
 if __name__ == "__main__":

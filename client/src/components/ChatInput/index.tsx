@@ -18,11 +18,11 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
     setChatInput(event.target.value);
   };
 
-  const ws = useRef<any>();
+  const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (null !== ws) {
-      ws.current = new WebSocket(`ws://127.0.0.1:3500/chat?token=${token}`);
+      ws.current = new WebSocket(`ws://127.0.0.1:8001/chat?token=${token}`);
       ws.current.onopen = () => setSocketState("active");
       ws.current.onclose = () => setSocketState("");
 
@@ -55,7 +55,9 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
         timestamp: Date.now().toLocaleString(),
       };
       setMessages(messages.concat(chat));
-      ws.current.send(chatInput);
+      if (ws.current) {
+        ws.current.send(chatInput);
+      }
       setChatInput("");
     }
   };

@@ -1,4 +1,3 @@
-from src.redis.config import Redis
 import asyncio
 from src.model.gptj import GPT
 from src.redis.cache import Cache
